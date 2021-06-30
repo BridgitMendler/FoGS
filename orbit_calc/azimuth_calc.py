@@ -48,26 +48,6 @@ defaultStationOptions = {
 }
 
 
-# In[ ]:
-
-
-
-
-def calcAzimuth(lat, long, alt, time, station):
-    ourLat = 78.229989
-    ourLong = 15.404913
-    ourHeight = 200
-    ourAzEl = pyorbital.orbital.get_observer_look(np.atleast_1d(lat), np.atleast_1d(long), np.atleast_1d(alt), datetime.now(), np.atleast_1d(ourLat), np.atleast_1d(ourLong), np.atleast_1d(ourHeight))
-    ourDf = pd.DataFrame({"minutes":[time],
-                         "station":[station['name']],
-                        "elevation":[ourAzEl[1][0]]})
-    if ourAzEl[1][0] > 20:
-        global satDf
-        satDf = satDf.append(ourDf, ignore_index = True)
-        print('WE ARE AT A GOOD ANGLE!!!', ourAzEl[1][0], 'minutes', time, 'station', station['name'])
-        print(satDf)
-
-
 # In[11]:
 
 
