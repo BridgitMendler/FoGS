@@ -147,7 +147,6 @@ def dspace(options):
             atime = atime[0]
         if type(atime) is tuple:
             atime = atime[0]
-#         print('atime', atime, 't', t, 'argpm', argpm, 'nodem', nodem, 'mm', mm)
         if (atime == 0.0 or t[0] * atime <= 0.0 or abs(t[0]) < abs(atime)):
             atime = 0.0;
             xni = no;
@@ -196,7 +195,6 @@ def dspace(options):
             else:
                 #           // --------- near - half-day resonance terms --------
                 xomi = argpo + argpdot * atime;
-#                 print('xomi', xomi, 'argpo', argpo, 'argpdot', argpdot, 'atime', atime, 'x2omi', x2omi)
                 x2omi = xomi + xomi;
                 x2li = xli + xli;
                 xndt = d2201[0][0] * math.sin(x2omi + xli - g22) + d2211[0][0] * math.sin(xli - g22) + d3210[0][0] * math.sin(xomi + xli - g32) + d3222 * math.sin(-xomi + xli - g32) + d4410 * math.sin(x2omi + x2li - g44) + d4422 * math.sin(x2li - g44) + d5220 * math.sin(xomi + xli - g52) + d5232 * math.sin(-xomi + xli - g52) + d5421 * math.sin(xomi + x2li - g54) + d5433 * math.sin(-xomi + x2li - g54);
@@ -268,13 +266,10 @@ def sgp4(satrec, tsince):
     #     //  ------- update for secular gravity and atmospheric drag -----
 
     xmdf = satrec['mo'][0] + satrec['mdot'] * satrec['t'];
-#     print('HERE WE ARE TESTING!', type(satrec['argpo'][0]),satrec['argpdot'], satrec['t'])
     if type(satrec['argpo'][0]) is tuple:
-#         print('yup we are a tuple!!',('else!!', type(satrec['nodeo']), type(satrec['nodedot']), type(satrec['t'])),)
         argpdf = satrec['argpo'][0][0] + satrec['argpdot'] * satrec['t'];
         nodedf = satrec['nodeo'][0] + satrec['nodedot'] * satrec['t'];
     else:
-#         print('else!!', type(satrec['nodeo']), type(satrec['nodedot']), type(satrec['t']))
         argpdf = satrec['argpo'][0] + satrec['argpdot'] * satrec['t'];
         nodedf = satrec['nodeo'] + satrec['nodedot'] * satrec['t'];
     argpm = argpdf;
@@ -282,12 +277,10 @@ def sgp4(satrec, tsince):
     t2 = satrec['t'] * satrec['t'];
     nodem = nodedf + satrec['nodecf'] * t2;
     tempa = 1.0 - satrec['cc1'] * satrec['t'];
-#     print('satrec bstar', satrec['bstar'], 'satrec cc4', satrec['cc4'])
     tempe = float(satrec['bstar'][0]) * satrec['cc4'] * satrec['t'];
     templ = satrec['t2cof'] * t2;
 
     if (satrec['isimp'] != 1):
-#         print('satrec not isimp')
         delomg = satrec['omgcof'] * satrec['t'];
         #                                  //  sgp4fix use mutliply for speed instead of pow
 
@@ -302,13 +295,11 @@ def sgp4(satrec, tsince):
         tempe += float(satrec['bstar'][0]) * satrec['cc5'] * (math.sin(mm) - satrec['sinmao']);
         templ = templ + satrec['t3cof'] * t3 + t4 * (satrec['t4cof'] + satrec['t'] * satrec['t5cof']);
 
-#     print('done with satrec not isimp')
     nm = satrec['no'];
     em = satrec['ecco'];
     inclm = satrec['inclo'];
 
     if (satrec['method'] == 'd'):
-#         print('satrec method is equal to d in this scenario')
         tc = satrec['t'];
         dspaceOptions = {
         'irez': satrec['irez'],
@@ -348,7 +339,6 @@ def sgp4(satrec, tsince):
         'nodem': nodem,
         'nm': nm
         };
-#         print('we are just before dspace dspaceOptions')
         dspaceResult = dspace(dspaceOptions);
         em = dspaceResult['em'];
         argpm = dspaceResult['argpm'];
@@ -358,18 +348,13 @@ def sgp4(satrec, tsince):
         nm = dspaceResult['nm'];
 
     if (nm <= 0.0):
-#         print('nm <= 0')
-    #       // printf("// error nm %f\n", nm);
         satrec['error'] = 2;
 #                       // sgp4fix add return
 
         return [false, false];
 
-#     print('below the <=')
     am = math.pow(xke / nm, x2o3) * tempa * tempa;
     nm = xke / math.pow(am, 1.5);
-#     print(tempe, em)
-#     print('THIS IS ABOUT THE EM OKAY!!!', type(em))
     if type(em) is tuple:
         em = em[0]
     em -= float(tempe);
@@ -378,7 +363,6 @@ def sgp4(satrec, tsince):
 
     if (em >= 1.0 or em < -0.001):
 #       // || (am < 0.95)
-#       // printf("// error em %f\n", em);
         satrec['error'] = 1;
         #                       // sgp4fix to return if there is an error in eccentricity
 
@@ -391,6 +375,7 @@ def sgp4(satrec, tsince):
 
 
     mm += satrec['no'] * templ;
+
     xlm = mm + argpm + nodem;
     nodem %= twoPi;
     argpm %= twoPi;
@@ -414,7 +399,6 @@ def sgp4(satrec, tsince):
     cosip = cosim;
 
     if (satrec['method'] == 'd'):
-#         print('satrec method == d')
         dpperParameters = {
         'inclo': satrec['inclo'],
         'init': 'n',
@@ -431,7 +415,10 @@ def sgp4(satrec, tsince):
         argpp = dpperResult['argpp'];
         mp = dpperResult['mp'];
         xincp = dpperResult['inclp'];
-
+        if type(nodep) is tuple:
+            nodep = nodep[0]
+        if type(argpp) is tuple:
+            argpp = argpp[0]
         if (xincp[0] < 0.0):
             xincp = xincp[0]
             xincp = -xincp;
@@ -441,7 +428,6 @@ def sgp4(satrec, tsince):
         if type(ep) is tuple:
             ep = ep[0]
         if (ep < 0.0 or ep > 1.0):
-    #         //  printf("// error ep %f\n", ep);
             satrec['error'] = 3;
     #             //  sgp4fix add return
 
@@ -452,7 +438,6 @@ def sgp4(satrec, tsince):
 
 
     if (satrec['method'] == 'd'):
-#         print('for some reason now satrec method == d')
         if type(xincp) is tuple:
             xincp = xincp[0]
         sinip = math.sin(xincp);
@@ -475,8 +460,9 @@ def sgp4(satrec, tsince):
     if type(nodep) is tuple:
         nodep = nodep[0]
     xl = mp + argpp + nodep + temp * satrec['xlcof'] * axnl;
+    # xl = temp * satrec['xlcof'] * axnl;
     #         // --------------------- solve kepler's equation ---------------
-
+    # u = (xl ) % twoPi;
     u = (xl - nodep) % twoPi;
     eo1 = u;
     tem5 = 9999.9;
@@ -486,7 +472,6 @@ def sgp4(satrec, tsince):
     #
 
     while (abs(tem5) >= 1.0e-12 and ktr <= 10):
-#         print('in the while loop')
         sineo1 = math.sin(eo1);
         coseo1 = math.cos(eo1);
         tem5 = 1.0 - coseo1 * axnl - sineo1 * aynl;
@@ -503,7 +488,6 @@ def sgp4(satrec, tsince):
         ktr += 1;
 #     } //  ------------- short period preliminary quantities -----------
 
-
     ecose = axnl * coseo1 + aynl * sineo1;
     esine = axnl * sineo1 - aynl * coseo1;
     el2 = axnl * axnl + aynl * aynl;
@@ -515,7 +499,6 @@ def sgp4(satrec, tsince):
         #         //  sgp4fix add return
 
         return [false, false];
-
 
     rl = am * (1.0 - ecose);
     rdotl = math.sqrt(am) * esine / rl;
@@ -537,13 +520,13 @@ def sgp4(satrec, tsince):
         satrec['con41'] = 3.0 * cosisq - 1.0;
         satrec['x1mth2'] = 1.0 - cosisq;
         satrec['x7thm1'] = 7.0 * cosisq - 1.0;
-
     mrt = rl * (1.0 - 1.5 * temp2 * betal * satrec['con41']) + 0.5 * temp1 * satrec['x1mth2'] * cos2u;
 #     // sgp4fix for decaying satellites
 
     if (mrt < 1.0):
 #       // printf("// decay condition %11.6f \n",mrt);
         satrec['error'] = 6;
+
         return {
             'position': false,
             'velocity': false
@@ -585,7 +568,6 @@ def sgp4(satrec, tsince):
         'y': (mvt * uy + rvdot * vy) * vkmpersec,
         'z': (mvt * uz + rvdot * vz) * vkmpersec
     };
-#     print('done with another sgp4')
     return {
         'position': r,
         'velocity': v
@@ -702,7 +684,6 @@ def dsinit(options):
         em = em[0]
     if type(em) is tuple:
         em = em[0]
-#     print('nm', nm, 'em', em)
     if (nm >= 8.26e-3 and nm <= 9.24e-3 and em >= 0.5):
         irez = 2;
 
@@ -711,7 +692,6 @@ def dsinit(options):
 
     ses = ss1[0] * zns * ss5[0];
     sis = ss2[0] * zns * (sz11[0] + sz13[0]);
-#     print('sz1', sz1, 'sz3', sz3)
     sls = -zns * ss3[0] * (sz1[0] + sz3[0] - 14.0 - 6.0 * emsq[0]);
     sghs = ss4[0] * zns * (sz31[0] + sz33[0] - 6.0);
     shs = -zns * ss2[0] * (sz21[0] + sz23[0]);
@@ -724,11 +704,9 @@ def dsinit(options):
     if (sinim != 0.0):
         shs /= sinim[0];
 
-#     print('sghs', sghs, 'cosim', cosim, 'shs', shs)
     sgs = sghs - cosim[0] * shs;
 # // ------------------------- do lunar terms ------------------
 
-#     print('z11', z11, 'z13', z13, 'sis', sis)
     dedt = ses + s1[0] * znl * s5[0];
     didt = sis + s2[0] * znl * (z11[0] + z13[0]);
     dmdt = sls - znl * s3[0] * (z1[0] + z3[0] - 14.0 - 6.0 * emsq[0]);
@@ -743,7 +721,6 @@ def dsinit(options):
     domdt = sgs + sghl;
     dnodt = shs;
 
-#     print('shll', shll, 'cosim', cosim)
     if (sinim != 0.0):
         domdt -= cosim[0] / sinim[0] * shll;
         dnodt += shll / sinim[0];
@@ -783,7 +760,6 @@ def dsinit(options):
     if (irez != 0):
         if type(nm) is tuple:
             nm = nm[0]
-#         print('nm', nm, 'xke', xke, 'x2o3', x2o3)
         aonv = math.pow(nm / xke, x2o3);
 #       // ---------- geopotential resonance for 12 hour orbits ------
 
@@ -809,7 +785,6 @@ def dsinit(options):
             emsq = eccsq;
             if type(emsq) is tuple:
                 emsq = emsq[0]
-#             print('em', em, 'emsq', emsq)
             eoc = em * emsq;
             g201 = -0.306 - (em - 0.64) * 0.440;
 
@@ -877,7 +852,6 @@ def dsinit(options):
             temp = 2.0 * temp1 * root54;
             d5421 = temp * f542 * g521;
             d5433 = temp * f543 * g533;
-#             print(dmdt, nodedot, dnodt, rptim)
             xlamo = (mo[0][0] + nodeo[0][0] + nodeo[0][0] - (theta + theta)) % twoPi;
             xfact = mdot[0] + dmdt + 2.0 * (nodedot[0] + dnodt - rptim) - no[0];
             em = emo;
@@ -894,7 +868,6 @@ def dsinit(options):
             f311 = 0.9375 * sinim[0] * sinim[0] * (1.0 + 3.0 * cosim[0]) - 0.75 * (1.0 + cosim[0]);
             f330 = 1.0 + cosim[0];
             f330 *= 1.875 * f330 * f330;
-#             print('mdot', mdot, 'xpidot', xpidot, 'dmdt', dmdt, 'domdt', domdt, 'dnodt', dnodt, 'no',no, 'rptim', rptim)
             del1 = 3.0 * nm * nm * aonv * aonv;
             del2 = 2.0 * del1 * f220 * g200 * q22;
             del3 = 3.0 * del1 * f330 * g300 * q33 * aonv;
@@ -1010,7 +983,6 @@ def dpper(satrec, options):
     sinzf = math.sin(zf);
     f2 = 0.5 * sinzf * sinzf - 0.25;
     f3 = -0.5 * sinzf * math.cos(zf);
-#     print('zmol', zmol, 'znl', znl, 'se3', sl3, 'f3', f3)
     ses = se2[0] * f2 + se3[0] * f3;
     sis = si2[0] * f2 + si3[0] * f3;
     sls = sl2[0] * f2 + sl3[0] * f3 + sl4[0] * sinzf;
@@ -1026,7 +998,6 @@ def dpper(satrec, options):
     sinzf = math.sin(zf);
     f2 = 0.5 * sinzf * sinzf - 0.25;
     f3 = -0.5 * sinzf * math.cos(zf);
-#     print('ee2', ee2, 'e3', e3)
     sel = ee2[0] * f2 + e3[0] * f3;
     sil = xi2[0] * f2 + xi3[0] * f3;
     sll = xl2[0] * f2 + xl3[0] * f3 + xl4[0] * sinzf;
@@ -1156,7 +1127,6 @@ def dscom(options):
     plo = 0.0;
     pgho = 0.0;
     pho = 0.0;
-#     print('tc', tc)
     day = epoch[0][0] + 18261.5 + tc[0] / 1440.0;
     xnodce = (4.5236020 - 9.2422029e-4 * day) % twoPi;
     stem = math.sin(xnodce);
@@ -2009,7 +1979,6 @@ def sgp4init(satrec, options):
 
 
         if (satrec['isimp'] != 1):
-#             print('it is satrec[isimp]')
             cc1sq = satrec['cc1'] * satrec['cc1'];
             satrec['d2'] = 4.0 * ao[0] * tsi * cc1sq;
             temp = satrec['d2'] * tsi * satrec['cc1'] / 3.0;
